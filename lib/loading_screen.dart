@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:yelpflutter/services/business.dart';
 import 'package:yelpflutter/services/location.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -39,11 +40,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
     Iterable decodedData = jsonDecode(response.body)['businesses'];
 
     // extract the names to a list
-    List<String> businessNames = decodedData
-        .map((businessJson) => businessJson['name'].toString())
+    List<Business> businesses = decodedData
+        .map((businessJson) => Business.fromJson(businessJson))
         .toList();
 
-    return businessNames;
+    return businesses;
   }
 
 // render the future to the screen via FutureBuilder
@@ -64,14 +65,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
                         decoration: new BoxDecoration(
                           image: DecorationImage(
                             image: new NetworkImage(
-                                "http://s3-media2.fl.yelpcdn.com/bphoto/MmgtASP3l_t4tPCL1iAsCg/o.jpg"),
+                                '${snapshot.data[index].image_url}'),
                             fit: BoxFit.fill,
                           ),
                           shape: BoxShape.circle,
                         ),
                       ),
                       Card(
-                        child: Text('${snapshot.data[index]}'),
+                        child: Text('${snapshot.data[index].name}'),
                       ),
                     ],
                   );
