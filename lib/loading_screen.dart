@@ -12,7 +12,7 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
 // Future variable
-  Future<String> _futureData;
+  Future<List> _futureData;
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
 // returns a Future asynchronously
-  Future<String> _fetchBusinessList() async {
+  Future<List> _fetchBusinessList() async {
     await DotEnv().load('.env');
     Location location = Location();
     await location.getLocation();
@@ -35,20 +35,47 @@ class _LoadingScreenState extends State<LoadingScreen> {
       },
     );
 
-    // later we will return a collection of Businesses
-    return "Happy Times!";
+    // get the businesses from the response
+    Iterable decodedData = jsonDecode(response.body)['businesses'];
+
+    // extract the names to a list
+    List<String> businessNames = decodedData
+        .map((businessJson) => businessJson['name'].toString())
+        .toList();
+
+    return businessNames;
   }
 
 // render the future to the screen via FutureBuilder
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
+    return FutureBuilder<List>(
         future: _futureData,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Text(snapshot.data);
-          } else if (snapshot.hasError) {
-            return Text(snapshot.error);
+            return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: <Widget>[
+                      Container(
+                        height: 120.0,
+                        width: 120.0,
+                        decoration: new BoxDecoration(
+                          image: DecorationImage(
+                            image: new NetworkImage(
+                                "http://s3-media2.fl.yelpcdn.com/bphoto/MmgtASP3l_t4tPCL1iAsCg/o.jpg"),
+                            fit: BoxFit.fill,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Card(
+                        child: Text('${snapshot.data[index]}'),
+                      ),
+                    ],
+                  );
+                });
           }
           // default show a loading spinner
           return CircularProgressIndicator();
